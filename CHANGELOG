@@ -1,3 +1,17 @@
+0.6.0:
+	add mlib to configure
+	support for extract-xiso optimized images - Rasmus Rohde <rohde@duff.dk>
+	support for big endian - Rasmus Rohde <rohde@duff.dk>
+	added make install/uninstall
+	updated to compile on the following platforms/archs (thanks to sourceforge cf)
+                x86-linux
+                x86_64-linux
+                x86-freebsd
+		x86-netbsd
+		ppc-osx
+                alpha-linux
+                sparc-solaris
+
 0.5.9:
 	realloc bugfix - Capelle Benoit <capelle@free.fr>
 

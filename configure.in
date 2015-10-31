@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(xbiso.c,0.5.9,xbiso@linuxmail.org)
+AC_INIT(xbiso.c,0.6.0,xbiso@linuxmail.org)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -7,7 +7,7 @@ AC_PROG_CC
 dnl Checks for libraries.
 dnl Replace `main' with a function in -lftp:
 AC_CHECK_LIB(ftp, main,[LIBS="-DUSE_FTP -lftp"],AC_MSG_WARN([Warning libftp not found ftp features disabled]))
-
+AC_CHECK_LIB(m, ceil,[LIBS="$LIBS -lm"],AC_MSG_ERROR([Error mlib is required]))
 AC_ARG_ENABLE(ftp,
 [
 
@@ -15,10 +15,25 @@ AC_ARG_ENABLE(ftp,
 ],[LIBS=""])
 
 dnl Checks for header files.
+AC_CONFIG_HEADERS([config.h:config.h.in])
 AC_HEADER_STDC
 AC_CHECK_HEADERS(fcntl.h malloc.h unistd.h)
 
+dnl willy nilly
+PLATFORM=`uname -s`
+case $PLATFORM in
+	*BSD)
+		AC_DEFINE([_BSD],1,[bsd])
+		;;
+	Linux)
+		AC_DEFINE([_LINUX],1,[linux])
+		;;
+	Darwin)
+		AC_DEFINE([_BSD],1,[darwin])
+		;;
+esac
 dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_BIGENDIAN
 AC_C_CONST
 AC_TYPE_OFF_T
 AC_TYPE_SIZE_T

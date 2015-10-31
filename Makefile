@@ -1,21 +1,21 @@
 # Generated automatically from Makefile.in by configure.
 .SUFFIXES: .c .o
 SHELL = /bin/sh
-VPATH = @srcdir@
+
 
 subdirs = @subdirs@
-top_srcdir = @top_srcdir@
-srcdir = @srcdir@
-prefix = @prefix@
-exec_prefix = @exec_prefix@
+top_srcdir = .
+srcdir = .
+prefix = /usr/local
+exec_prefix = ${prefix}
 bindir = $(exec_prefix)/bin
 infodir = $(prefix)/info
 libdir = $(prefix)/lib/gnudl
 mandir = $(prefix)/man/man1
 
-CC = @CC@
-CFLAGS = $(CPPFLAGS) @CFLAGS@
-LIBS = @LIBS@
+CC = gcc
+CFLAGS = $(CPPFLAGS) -g -O2
+LIBS =  -lm
 
 all:
 	$(CC) $(CFLAGS) -o xbiso xbiso.c $(LIBS)

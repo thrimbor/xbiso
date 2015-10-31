@@ -7,3 +7,7 @@
 #define FILE_DIR	0x10
 #define	FILE_ARC	0x20
 #define FILE_NOR	0x80
+
+//endian macros
+#define btoll(dtbuf) (dtbuf[3]<<24) | (dtbuf[2]<<16) | (dtbuf[1]<<8) | dtbuf[0];
+#define btols(dtbuf) (dtbuf[1]<<8) | dtbuf[0];
