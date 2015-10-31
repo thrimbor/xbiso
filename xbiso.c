@@ -1,11 +1,13 @@
 /*
 
-xbiso v0.5.8, xdvdfs iso extraction utility developed for linux
+xbiso v0.5.9, xdvdfs iso extraction utility developed for linux
 Copyright (C) 2003  Tonto Rostenfaunt	<xbiso@linuxmail.org>
 
 Portions dealing with FTP access are
 Copyright (C) 2003  Stefan Alfredsson	<xbiso@alfredsson.org>
 
+Other contributors.
+	Capelle Benoit	<capelle@free.fr>
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -52,7 +54,7 @@ http://xbox-linux.sourceforge.net
 #endif
 
 
-const char *version = "0.5.8";
+const char *version = "0.5.9";
 
 
 struct	dirent {
@@ -156,7 +158,7 @@ int main(int argc, char *argv[]) {
 				break;
 	#endif
 			case 'd':
-				realloc(dbuf, (size_t)(strlen(optarg))+1);
+				dbuf = realloc(dbuf, (size_t)(strlen(optarg))+1);
 				memset(dbuf, 0, (size_t)(strlen(optarg))+1);
 				snprintf(dbuf,(size_t)(strlen(optarg))+1,"%s",optarg);
 			break;
@@ -169,7 +171,7 @@ int main(int argc, char *argv[]) {
 
 	//set the dirname to the filename - ext if blank
 	if(strcmp(dbuf,"")==0) {
-		realloc(dbuf, (size_t)(strlen((fname))));
+		dbuf = realloc(dbuf, (size_t)(strlen((fname))));
 		memset(dbuf, 0, (size_t)(strlen((fname))));
 		snprintf(dbuf,(size_t)(strlen(fname))-3,"%s",fname);
 	}
