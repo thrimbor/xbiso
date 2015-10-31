@@ -1,6 +1,6 @@
 /*
 
-xbiso v0.5.7, xdvdfs iso extraction utility developed for linux
+xbiso v0.5.8, xdvdfs iso extraction utility developed for linux
 Copyright (C) 2003  Tonto Rostenfaunt	<xbiso@linuxmail.org>
 
 Portions dealing with FTP access are
@@ -45,12 +45,14 @@ http://xbox-linux.sourceforge.net
 #include <sys/types.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <math.h>
 #include "xbiso.h"
 #ifdef USE_FTP
 #include <ftplib.h>
 #endif
 
-const char *version = "0.5.7";
+
+const char *version = "0.5.8";
 
 
 struct	dirent {
@@ -91,7 +93,8 @@ int main(int argc, char *argv[]) {
 	void *buffer;
 	char *dbuf,*fname;
 	long dtable[MAX_DEPTH],dtablesize[MAX_DEPTH];
-	int ltable=0,rtable=0,diri=0,ret;
+	int diri=0,block=1,ret,xisocompat=0;
+	double b1;
 	OFFT cpos;
 	#ifdef USE_FTP
 		char *host, *user, *pass, *initdir;
@@ -109,24 +112,25 @@ int main(int argc, char *argv[]) {
 		xbftell = ftello64;
 	#endif
 
-
 	if(argv[1] == NULL) { help=1; err(argv[0]); }
 
-	fname = malloc(strlen(argv[1]));
-	memset(fname,0,strlen(argv[1]));
+	fname = malloc(strlen(argv[1])+1);
+	memset(fname,0,strlen(argv[1])+1);
 	dbuf = malloc(1);
 	memset(dbuf, 0, 1);
-
-	fname = argv[1];
+	strcpy(fname,argv[1]);
 
 	#ifdef USE_FTP
-	while((ret = getopt(argc,argv,"h:u:p:i:fvd:")) != -1) {
+	while((ret = getopt(argc,argv,"h:u:p:i:fxvd:")) != -1) {
 	#else
-	while((ret = getopt(argc,argv,"vd:")) != -1) {
+	while((ret = getopt(argc,argv,"xvd:")) != -1) {
 	#endif
 		switch(ret) {
 			case 'v':
 				verb=1;
+			break;
+			case 'x':
+				xisocompat=1;
 			break;
 	#ifdef USE_FTP
 			case 'f':
@@ -165,8 +169,8 @@ int main(int argc, char *argv[]) {
 
 	//set the dirname to the filename - ext if blank
 	if(strcmp(dbuf,"")==0) {
-		realloc(dbuf, (size_t)(strlen((fname)-3)));
-		memset(dbuf, 0, (size_t)(strlen((fname)-3)));
+		realloc(dbuf, (size_t)(strlen((fname))));
+		memset(dbuf, 0, (size_t)(strlen((fname))));
 		snprintf(dbuf,(size_t)(strlen(fname))-3,"%s",fname);
 	}
 
@@ -199,7 +203,6 @@ int main(int argc, char *argv[]) {
 		xiso = fopen64(fname, "r");
 	#endif
 
-
 	if(xiso==NULL) err("Error opening file.\n");
 
 
@@ -221,8 +224,6 @@ int main(int argc, char *argv[]) {
 	#ifdef USE_FTP
 		}
 	#endif
-	free(dbuf);
-
 
 	xbfseek(xiso, (OFFT)0x10000, SEEK_SET);
 	fread(buffer, 0x14, 1, xiso);					//header
@@ -256,20 +257,40 @@ int main(int argc, char *argv[]) {
 		printf("ltable offset: %i\nrtable offset: %i\nsector: %li\nfilesize: %li\nattributes: 0x%x\nfilename lenght: %i\nfilename: %s\n\n", dirent[diri].ltable, dirent[diri].rtable, dirent[diri].sector, dirent[diri].size, dirent[diri].attribs, dirent[diri].fnamelen, dirent[diri].fname);
 		}
 
+		//xiso compat
+		if(xisocompat) {
+			if(dirent[diri].rtable != 0) {
+				cpos = xbftell(xiso);
+				fread(buffer,32,1,xiso);
+				//check if its the last record in block
+				if((memcmp(buffer,"\xff\xff\xff\xff\xff\xff",6))==0) {
+					//calc our own rtable
+					b1 = (cpos-(dtable[diri]*2048));
+					block = ceil(b1/4/512);
+					dirent[diri].rtable = block*512;
+				}
+				memset(buffer,0,32);
+				xbfseek(xiso,(OFFT)cpos,SEEK_SET);
+			}
+
+		}
+		//end xiso compat
+
+		//check for dirs with no files
+		if(dirent[diri].fnamelen != 0) {
 		if((dirent[diri].attribs & FILE_NOR) !=0) {
 			cpos = xbftell(xiso);
 			extract(diri);
 			xbfseek(xiso, (OFFT)cpos, SEEK_SET);					//reset position
 			xbfseek(xiso, (OFFT)dtable[diri]*2048, SEEK_SET);			//seek back to table start
 			xbfseek(xiso, (OFFT)xbftell(xiso)+(dirent[diri].rtable*4), SEEK_SET);	//seek to next entry
-
 		} else if ((dirent[diri].attribs & FILE_DIR) != 0) {
 			procdir(diri);
 			xbfseek(xiso, (OFFT)dirent[diri].sector*2048, SEEK_SET);		//seeking to next tree
 			dtable[diri+1] = dirent[diri].sector;					//set sector of new table
+			free(dirent[diri].fname);
 			diri++;
 			dirent[diri].rtable = 1;
-
 		} else {
 				// 0x01 FILE_RO, 0x02 FILE_HID, 0x04 FILE_SYS, 0x20 FILE_ARC
 				// Not going to bother setting other attributes for now
@@ -279,11 +300,17 @@ int main(int argc, char *argv[]) {
                         xbfseek(xiso, (OFFT)dtable[diri]*2048, SEEK_SET);                       //seek back to table start
                         xbfseek(xiso, (OFFT)xbftell(xiso)+(dirent[diri].rtable*4), SEEK_SET);	//seek to next entry
 		}
+		}
+		if(dirent[diri].rtable != 1)
+			free(dirent[diri].fname);
 
 			while(dirent[diri].rtable == 0 && dirent[diri].ltable == 0) {
 				if(diri == 0) {
 					printf("End of archive\n");
+					fclose(xiso);
 					free(buffer);
+					free(dbuf);
+					free(fname);
 					#ifdef USE_FTP
 						if(ftp) {
 							free(host); free(user); free(pass); free(initdir);
@@ -291,21 +318,20 @@ int main(int argc, char *argv[]) {
 					#endif
 					exit(0);
 				}
-		#ifdef USE_FTP
+			#ifdef USE_FTP
 			if(ftp) {
 				ftpChdir("..");
 			} else {
-		#endif
+			#endif
 			#ifdef _WIN32
 				SetCurrentDirectory("..");
 			#else
 				chdir("..");
 			#endif
-		#ifdef USE_FTP
+			#ifdef USE_FTP
 			}
-		#endif
+			#endif
 
-				free(dirent[diri].fname);
 				diri--;
 				xbfseek(xiso, (OFFT)dtable[diri]*2048, SEEK_SET);			//seek to last table
 				xbfseek(xiso, (OFFT)xbftell(xiso)+(dirent[diri].rtable*4), SEEK_SET);	//seek to next entry
@@ -332,10 +358,11 @@ void err(char *error) {
 		\n\n",version,platform);
 
 		printf("%s filename [options]\n",error);
-		printf("		-v             verbose\n");
-		printf("		-d (dirname)   directory to extract to\n");
+		printf("		-v	verbose\n");
+		printf("		-x	enable xiso <=1.10 compat\n");
+		printf("		-d	(dirname)   directory to extract to\n");
 	#ifdef USE_FTP
-		printf("\n		-f	       enable ftp extraction\n");
+		printf("\n		-f	enable ftp extraction\n");
 		printf("		   -h hostname    Address of xbox/ftp server\n");
 		printf("		   -u user        User id (normally 'xbox')\n");
 		printf("		   -p password    Password\n");
@@ -423,7 +450,7 @@ void extract(int diri) {
 	#ifdef USE_FTP
 		if(ftp) {
 			if ( (c = FtpWrite(fbuf, dirent[diri].size, nData)) != dirent[diri].size)
-			printf("FtpWrite only wrote %d of %d bytes.\n", c, dirent[diri].size);
+			printf("FtpWrite only wrote %d of %li bytes.\n", c, dirent[diri].size);
 			FtpClose(nData);
 		} else {
 	#endif
@@ -463,7 +490,7 @@ void extract(int diri) {
         #ifdef USE_FTP
 		if(ftp) {
 			if ( (c = FtpWrite(fbuf, BUFFSIZE, nData)) != BUFFSIZE)
-			printf("FtpWrite only wrote %d of %d bytes.\n", c, dirent[diri].size);
+			printf("FtpWrite only wrote %d of %li bytes.\n", c, dirent[diri].size);
 		} else {
         #endif
 			fwrite(fbuf, BUFFSIZE, 1, outf);
@@ -476,7 +503,7 @@ void extract(int diri) {
         #ifdef USE_FTP
 		if(ftp) {
 		       	if ( (c = FtpWrite(fbuf, rm, nData)) != rm)
-			printf("FtpWrite only wrote %d of %d bytes.\n", c, rm);
+			printf("FtpWrite only wrote %d of %li bytes.\n", c, rm);
 		} else {
         #endif
 			fwrite(fbuf, rm, 1, outf);

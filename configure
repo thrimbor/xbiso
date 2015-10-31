@@ -14,7 +14,7 @@ ac_default_prefix=/usr/local
 ac_help="$ac_help
 
 
-  --disable-ftp			Disables all ftp features and libftp dependancies
+  --disable-ftp			Disables all ftp features and libftp dependencies
 "
 
 # Initialize some variables set by options.
