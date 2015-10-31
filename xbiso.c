@@ -1,6 +1,6 @@
 /*
 
-xbiso v0.5.5, xbox iso extraction utility developed for linux
+xbiso v0.5.6, xdvdfs iso extraction utility developed for linux
 
 Copyright (C) 2002  Tonto Rostenfaunt	xbiso@linuxmail.org
 
@@ -26,6 +26,8 @@ http://xbox-linux.sourceforge.net
 
 #ifdef _WIN32
 	#include <win.h>
+	#include "getopt.h"
+
 	const char *platform = "win32";
 #else
 	#define _LARGEFILE64_SOURCE
@@ -43,7 +45,7 @@ http://xbox-linux.sourceforge.net
 #include <errno.h>
 #include "xbiso.h"
 
-const char *version = "0.5.5";
+const char *version = "0.5.6";
 
 
 struct	dirent {
@@ -181,7 +183,6 @@ int main(int argc, char *argv[]) {
 		printf("ltable offset: %li\nrtable offset: %li\nsector: %i\nfilesize: %li\nattributes: 0x%x\nfilename lenght: %i\nfilename: %s\n\n", dirent[diri].ltable, dirent[diri].rtable, dirent[diri].sector, dirent[diri].size, dirent[diri].attribs, dirent[diri].fnamelen, dirent[diri].fname);
 		}
 
-//		if(dirent[diri].attribs == FILE_NOR) {
 		if((dirent[diri].attribs & FILE_NOR) !=0) {
 			cpos = xbftell(xiso);
 			extract(diri);
@@ -189,7 +190,6 @@ int main(int argc, char *argv[]) {
 			xbfseek(xiso, (OFFT)dtable[diri]*2048, SEEK_SET);			//seek back to table start
 			xbfseek(xiso, (OFFT)xbftell(xiso)+(dirent[diri].rtable*4), SEEK_SET);	//seek to next entry
 
-//		} else if ( dirent[diri].attribs == FILE_DIR) {
 		} else if ((dirent[diri].attribs & FILE_DIR) != 0) {
 			procdir(diri);
 			xbfseek(xiso, (OFFT)dirent[diri].sector*2048, SEEK_SET);		//seeking to next tree

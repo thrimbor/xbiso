@@ -1,0 +1,8 @@
+0.5.6:
+
+	Fixed win32 support.
+	Provided win32 binary.
+
+0.5.5:
+
+	First public release.

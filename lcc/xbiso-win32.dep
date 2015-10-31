@@ -1,0 +1,7 @@
+[XBISO.C]
+getopt.h
+xbiso.h
+[GETOPT.C]
+getopt.h
+xbisowin32.h
+[ALLOCA.C]
