@@ -1,0 +1,11 @@
+This was originally developed for the purpose of being able to
+extract xdvdfs iso images under linux. This source will compile
+under win32 if  _WIN32 is defined at compile time. However due
+to the requirements of using the win32 api file management funtions
+for files larger then 2GB the windows version will fail on images
+larger then 2GB and i have no plans on rewriting it for this purpose.
+
+There is most likely several bugs, and it has lacked a great deal
+of testing. The src is sloppy and has several known problems that need
+to be fixed. Feedback is welcome at xbiso@linuxmail.org
+
