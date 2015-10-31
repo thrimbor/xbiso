@@ -1,3 +1,6 @@
+0.6.1:
+	patched traversal bug
+
 0.6.0:
 	add mlib to configure
 	support for extract-xiso optimized images - Rasmus Rohde <rohde@duff.dk>

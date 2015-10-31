@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(xbiso.c,0.6.0,xbiso@linuxmail.org)
+AC_INIT(xbiso.c,0.6.1,xbiso@linuxmail.org)
 
 dnl Checks for programs.
 AC_PROG_CC

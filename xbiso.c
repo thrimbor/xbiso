@@ -1,6 +1,6 @@
 /*
 
-xbiso v0.6.0, xdvdfs iso extraction utility developed for linux
+xbiso v0.6.1, xdvdfs iso extraction utility developed for linux
 Copyright (C) 2003  Tonto Rostenfaunt	<xbiso@linuxmail.org>
 
 Portions dealing with FTP access are
@@ -56,7 +56,7 @@ const char *platform = "linux";
 #endif
 
 
-const char *version = "0.6.0";
+const char *version = "0.6.1";
 unsigned char dtbuf[4];
 
 struct	dirent {
@@ -116,8 +116,8 @@ int main(int argc, char *argv[]) {
   xbftell = ftello;
 #else
   int (*xbfseek)();
-  xbfseek = fseeko64;
   OFFT (*xbftell)();
+  xbfseek = fseeko64;
   xbftell = ftello64;
 #endif
 
@@ -309,7 +309,12 @@ handlefile(OFFT offset, int dtable) {
     
   memset(dirent.fname,0,dirent.fnamelen+1);
   fread(dirent.fname, dirent.fnamelen, 1, xiso);	//filename
-	    
+
+  if (strstr(dirent.fname,"..") || strchr(dirent.fname, '/') || strchr(dirent.fname, '\\'))                                                                                                                                          
+    {                                                                                                                                                                                                                                
+      printf("Filename contains invalid characters");                                                                                                                                                                                
+      exit(1);                                                                                                                                                                                                                       
+    }     
     
   if(verb) {
     printf("ltable offset: %i\nrtable offset: %i\nsector: %li\nfilesize: %li\nattributes: 0x%x\nfilename length: %i\nfilename: %s\n\n", dirent.ltable, dirent.rtable, dirent.sector, dirent.size, dirent.attribs, dirent.fnamelen, dirent.fname);
