@@ -16,6 +16,11 @@ of testing. The src is sloppy and has several known problems that need
 to be fixed. Feedback is welcome at xbiso@linuxmail.org
 
 
+Even though there is ftplib for win, i will not include a binary with
+ftp support for the windows version of xbiso and the source is untested
+for it so may not even work in its current state.
+
+
 Project Credits and Links.
 
 xbox-linux      http://xbox-linux.sourceforge.net/
@@ -29,3 +34,5 @@ lcc-win32       http://www.cs.virginia.edu/~lcc-win32/
 
 sourceforge     http://www.sourceforge.net/
 
+Stefan Alfredsson  <xbiso@alfredsson.org>
+	ftp support.

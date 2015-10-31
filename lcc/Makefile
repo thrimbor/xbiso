@@ -1,17 +1,17 @@
-# Wedit Makefile for project xbiso-win32
-SRCDIR=d:\lcc\projects\xbiso-0.5.6
-CFLAGS=-Id:\lcc\include  -O  -p6
-CC=d:\lcc\bin\lcc.exe
-LINKER=d:\lcc\bin\lcclnk.exe
+# Wedit Makefile for project xbiso057
+SRCDIR=g:\xbiso-0.5.7
+CFLAGS=-Id:\lcc\include -D_WIN32  -O  -p6
+CC=$(LCCROOT)\bin\lcc.exe
+LINKER=$(LCCROOT)\bin\lcclnk.exe
 OBJS=\
 	xbiso.obj \
-	getopt.obj \
-	alloca.obj
+	getopt.obj
 
 LIBS= tcconio.lib
+EXE=xbiso057.exe
 
-xbiso-win32.exe:	$(OBJS) Makefile
-	$(LINKER)  -subsystem console -o $(SRCDIR)\lcc\xbiso-win32.exe $(OBJS) $(LIBS)
+$(EXE):	$(OBJS) Makefile
+	$(LINKER)  -s -subsystem console -o $(SRCDIR)\lcc\xbiso057.exe $(OBJS) $(LIBS)
 
 # Build XBISO.C
 XBISO_C=\
@@ -29,12 +29,8 @@ GETOPT_C=\
 getopt.obj: $(GETOPT_C) $(SRCDIR)\getopt.c
 	$(CC) -c $(CFLAGS) $(SRCDIR)\getopt.c
 
-# Build ALLOCA.C
-ALLOCA_C=\
-
-alloca.obj: $(ALLOCA_C) $(SRCDIR)\alloca.c
-	$(CC) -c $(CFLAGS) $(SRCDIR)\alloca.c
-
 link:
-	$(LINKER)  -subsystem console -o $(SRCDIR)\lcc\xbiso-win32.exe $(OBJS) $(LIBS)
+	$(LINKER)  -s -subsystem console -o $(SRCDIR)\lcc\xbiso057.exe $(OBJS) $(LIBS)
 
+clean:
+	del $(OBJS) g:\xbiso-0.5.7\lcc\xbiso057.exe

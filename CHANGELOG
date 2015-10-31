@@ -1,3 +1,10 @@
+0.5.7:
+
+	Merged 0.5.6-1 bugfix patch.
+	Merged xbiso-ftp by, Stefan Alfredsson  <xbiso@alfredsson.org>.
+	configure script for detection of libftp etc.
+	Other minor changes.
+
 0.5.6:
 
 	Fixed win32 support.
