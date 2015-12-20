@@ -3,7 +3,7 @@ set (CMAKE_CXX_STANDARD 11)
 
 project (xbiso)
 
-set (XBISO_VERSION 0.7.0)
+set (XBISO_VERSION 0.7.1)
 set (XBISO_OS ${CMAKE_SYSTEM_NAME})
 
 configure_file (

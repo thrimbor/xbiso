@@ -20,6 +20,10 @@ void xdvdfs::VolumeDescriptor::readFromFile (std::ifstream& file)
     std::copy(buffer.begin()+0x18, buffer.begin()+0x1C, reinterpret_cast<char*>(&this->rootDirTableSize));
     std::copy(buffer.begin()+0x1C, buffer.begin()+0x24, this->filetime);
     std::copy(buffer.begin()+0x7EC, buffer.end(), this->magicNumber2);
+
+    // endianess conversion
+    this->rootDirTableSector = le_to_host(this->rootDirTableSector);
+    this->rootDirTableSize = le_to_host(this->rootDirTableSize);
 }
 
 void xdvdfs::VolumeDescriptor::validate ()
@@ -62,6 +66,12 @@ void xdvdfs::DirectoryEntry::readFromFile (std::ifstream& file, std::streampos s
     this->filename = std::string(&buffer[0x0E], *filenameLength);
 
     this->sectorNumber = sector;
+
+    // endianess conversion
+    this->leftSubTree = le_to_host(this->leftSubTree);
+    this->rightSubTree = le_to_host(this->rightSubTree);
+    this->startSector = le_to_host(this->startSector);
+    this->fileSize = le_to_host(this->fileSize);
 }
 
 std::string xdvdfs::DirectoryEntry::getFilename ()

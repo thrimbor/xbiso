@@ -23,6 +23,20 @@ namespace xdvdfs
             std::string sDetails;
     };
 
+    template<typename T>
+    T le_to_host(T t)
+    {
+        uint8_t *bptr = reinterpret_cast<uint8_t*>(&t);
+        T r = 0;
+
+        for (std::size_t s=0; s<sizeof(T); ++s)
+        {
+            r |= bptr[s] << s*8;
+        }
+
+        return r;
+    }
+
     class DirectoryEntry;
 
     /**
