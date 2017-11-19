@@ -175,14 +175,17 @@ void handleDirectoryEntry (std::ifstream& file, xdvdfs::DirectoryEntry& dirent)
     {
         std::cout << "extracting " << dirent.getFilename() << std::endl;
 
-        std::ofstream efile;
-        efile.open(dirent.getFilename().c_str(), efile.out | efile.binary | efile.trunc);
+        if (!dryRun)
+        {
+            std::ofstream efile;
+            efile.open(dirent.getFilename().c_str(), efile.out | efile.binary | efile.trunc);
 
-        if (!efile.is_open()) {
-            std::cerr << "failed to open file '" << dirent.getFilename() << "'" << std::endl;
+            if (!efile.is_open()) {
+                std::cerr << "failed to open file '" << dirent.getFilename() << "'" << std::endl;
+            }
+
+            dirent.extractFile(file, efile);
         }
-
-        dirent.extractFile(file, efile);
     }
 
     if (dirent.hasLeftChild())
