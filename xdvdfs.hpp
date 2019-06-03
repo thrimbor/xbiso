@@ -47,7 +47,7 @@ namespace xdvdfs
     class VolumeDescriptor
     {
         public:
-            void readFromFile (std::ifstream& file);
+            void readFromFile (std::ifstream& file, const std::ifstream::off_type sectorOffset = 0);
             void validate () const;
             DirectoryEntry getRootDirEntry (std::ifstream& file);
 
@@ -58,12 +58,13 @@ namespace xdvdfs
             char filetime[8];               ///< FILETIME-structure containing the creation time
             /* zero filled area to fill the whole sector */
             char magicNumber2[0x14];        ///< 20 byte block containing the same magic number
+            std::ifstream::off_type sectorOffset;
     };
 
     class DirectoryEntry
     {
         public:
-            void readFromFile (std::ifstream& file, std::streampos pos, std::streampos offset = 0);
+            void readFromFile (std::ifstream& file, std::streampos pos, std::streampos offset = 0, std::ifstream::off_type sectorOffset = 0);
             std::string getFilename () const;
             std::streamsize getFileSize() const;
             void extractFile(std::ifstream& file, std::ofstream& ofile);
@@ -89,6 +90,7 @@ namespace xdvdfs
             uint8_t  attributes;
             std::string filename;
 
+            std::ifstream::off_type sectorOffset;
             std::streampos sectorNumber;
     };
 }

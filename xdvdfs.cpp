@@ -4,12 +4,12 @@
 #include <cstring>
 #include <iostream>
 
-void xdvdfs::VolumeDescriptor::readFromFile (std::ifstream& file)
+void xdvdfs::VolumeDescriptor::readFromFile (std::ifstream& file, const std::ifstream::off_type sectorOffset)
 {
     std::vector<char> buffer(2048);
 
     // read the whole sector
-    file.seekg(VOLUME_DESCRIPTOR_SECTOR*SECTOR_SIZE, std::ifstream::beg);
+    file.seekg((sectorOffset + VOLUME_DESCRIPTOR_SECTOR) * SECTOR_SIZE, std::ifstream::beg);
     file.read(buffer.data(), buffer.size());
 
     // TODO: couldn't we use the stream operator instead?
@@ -22,6 +22,8 @@ void xdvdfs::VolumeDescriptor::readFromFile (std::ifstream& file)
     // endianess conversion
     this->rootDirTableSector = le_to_host(this->rootDirTableSector);
     this->rootDirTableSize = le_to_host(this->rootDirTableSize);
+
+    this->sectorOffset = sectorOffset;
 }
 
 void xdvdfs::VolumeDescriptor::validate () const
@@ -40,17 +42,17 @@ xdvdfs::DirectoryEntry xdvdfs::VolumeDescriptor::getRootDirEntry (std::ifstream&
 {
     xdvdfs::DirectoryEntry dirent;
 
-    dirent.readFromFile(file, rootDirTableSector);
+    dirent.readFromFile(file, rootDirTableSector, 0, this->sectorOffset);
 
     return dirent;
 }
 
-void xdvdfs::DirectoryEntry::readFromFile (std::ifstream& file, std::streampos sector, std::streampos offset)
+void xdvdfs::DirectoryEntry::readFromFile (std::ifstream& file, std::streampos sector, std::streampos offset, std::ifstream::off_type sectorOffset)
 {
     std::vector<char> buffer(2048);
 
     // read the whole sector
-    file.seekg(sector*xdvdfs::SECTOR_SIZE + offset, std::ifstream::beg);
+    file.seekg((sectorOffset + sector) * xdvdfs::SECTOR_SIZE + offset, std::ifstream::beg);
     file.read(buffer.data(), buffer.size());
 
     std::copy(buffer.begin(), buffer.begin()+0x02, reinterpret_cast<char*>(&this->leftSubTree));
@@ -64,6 +66,7 @@ void xdvdfs::DirectoryEntry::readFromFile (std::ifstream& file, std::streampos s
     this->filename = std::string(&buffer[0x0E], *filenameLength);
 
     this->sectorNumber = sector;
+    this->sectorOffset = sectorOffset;
 
     // endianess conversion
     this->leftSubTree = le_to_host(this->leftSubTree);
@@ -90,7 +93,7 @@ void xdvdfs::DirectoryEntry::extractFile(std::ifstream& file, std::ofstream& ofi
     std::vector<char> buffer(4096);
     std::size_t filesize = this->fileSize;
 
-    file.seekg(xdvdfs::SECTOR_SIZE * this->startSector);
+    file.seekg(xdvdfs::SECTOR_SIZE * (this->sectorOffset + this->startSector));
 
     while (filesize > 0)
     {
@@ -127,7 +130,7 @@ bool xdvdfs::DirectoryEntry::hasRightChild () const
 xdvdfs::DirectoryEntry xdvdfs::DirectoryEntry::getLeftChild (std::ifstream& file)
 {
     xdvdfs::DirectoryEntry dirent;
-    dirent.readFromFile(file, this->sectorNumber, static_cast<std::streampos>(this->leftSubTree*4));
+    dirent.readFromFile(file, this->sectorNumber, static_cast<std::streampos>(this->leftSubTree*4), this->sectorOffset);
 
     return dirent;
 }
@@ -135,7 +138,7 @@ xdvdfs::DirectoryEntry xdvdfs::DirectoryEntry::getLeftChild (std::ifstream& file
 xdvdfs::DirectoryEntry xdvdfs::DirectoryEntry::getRightChild (std::ifstream& file)
 {
     xdvdfs::DirectoryEntry dirent;
-    dirent.readFromFile(file, this->sectorNumber, static_cast<std::streampos>(this->rightSubTree*4));
+    dirent.readFromFile(file, this->sectorNumber, static_cast<std::streampos>(this->rightSubTree*4), this->sectorOffset);
 
     return dirent;
 }
@@ -146,7 +149,7 @@ xdvdfs::DirectoryEntry xdvdfs::DirectoryEntry::getFirstEntry (std::ifstream& fil
         throw xdvdfs::Exception("Tried to access file as a directory");
 
     xdvdfs::DirectoryEntry dirent;
-    dirent.readFromFile(file, this->startSector);
+    dirent.readFromFile(file, this->startSector, 0, this->sectorOffset);
 
     return dirent;
 }
