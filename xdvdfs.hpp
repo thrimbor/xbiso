@@ -47,7 +47,7 @@ namespace xdvdfs
     class VolumeDescriptor
     {
         public:
-            void readFromFile (std::ifstream& file);
+            void readFromFile (std::ifstream& file, const std::ifstream::off_type sectorOffset = 0);
             void validate () const;
             DirectoryEntry getRootDirEntry (std::ifstream& file);
 

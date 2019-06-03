@@ -4,12 +4,12 @@
 #include <cstring>
 #include <iostream>
 
-void xdvdfs::VolumeDescriptor::readFromFile (std::ifstream& file)
+void xdvdfs::VolumeDescriptor::readFromFile (std::ifstream& file, const std::ifstream::off_type sectorOffset)
 {
     std::vector<char> buffer(2048);
 
     // read the whole sector
-    file.seekg(VOLUME_DESCRIPTOR_SECTOR*SECTOR_SIZE, std::ifstream::beg);
+    file.seekg((sectorOffset + VOLUME_DESCRIPTOR_SECTOR) * SECTOR_SIZE, std::ifstream::beg);
     file.read(buffer.data(), buffer.size());
 
     // TODO: couldn't we use the stream operator instead?

@@ -134,6 +134,15 @@ int main (int argc, char* argv[])
 
             xdvdfs::VolumeDescriptor vd;
             vd.readFromFile(isofile);
+
+            try {
+                vd.validate();
+            } catch (xdvdfs::Exception &e) {
+                // Try again with the sector offset for Redump files
+                vd.readFromFile(isofile, 0x30600);
+                vd.validate();
+                std::cout << "Redump-style ISO detected" << std::endl;
+            }
             vd.validate();
 
             if (!dryRun) {
