@@ -15,7 +15,7 @@ namespace xdvdfs
         public:
             explicit Exception (const char * str) : sDetails(str) {}
 
-            virtual const char* what() const throw ()
+            const char* what() const noexcept override
             {
                 return this->sDetails.c_str();
             }
@@ -26,10 +26,10 @@ namespace xdvdfs
     template<typename T>
     T le_to_host(T t)
     {
-        uint8_t *bptr = reinterpret_cast<uint8_t*>(&t);
+        uint8_t *bptr = reinterpret_cast<uint8_t *>(&t);
         T r = 0;
 
-        for (std::size_t s=0; s<sizeof(T); ++s)
+        for (std::size_t s=0; s < sizeof(T); ++s)
         {
             r |= bptr[s] << s*8;
         }
@@ -48,7 +48,7 @@ namespace xdvdfs
     {
         public:
             void readFromFile (std::ifstream& file);
-            void validate ();
+            void validate () const;
             DirectoryEntry getRootDirEntry (std::ifstream& file);
 
         private:
@@ -57,19 +57,19 @@ namespace xdvdfs
             uint32_t rootDirTableSize;      ///< size of the root directory table in bytes
             char filetime[8];               ///< FILETIME-structure containing the creation time
             /* zero filled area to fill the whole sector */
-            char magicNumber2[0x14];        ///< 20 byte block containig the same magic number
+            char magicNumber2[0x14];        ///< 20 byte block containing the same magic number
     };
 
     class DirectoryEntry
     {
         public:
             void readFromFile (std::ifstream& file, std::streampos pos, std::streampos offset = 0);
-            std::string getFilename ();
-            std::streamsize getFileSize();
+            std::string getFilename () const;
+            std::streamsize getFileSize() const;
             void extractFile(std::ifstream& file, std::ofstream& ofile);
-            bool isDirectory ();
-            bool hasLeftChild ();
-            bool hasRightChild ();
+            bool isDirectory () const;
+            bool hasLeftChild () const;
+            bool hasRightChild () const;
             DirectoryEntry getLeftChild (std::ifstream& file);
             DirectoryEntry getRightChild (std::ifstream& file);
             DirectoryEntry getFirstEntry (std::ifstream& file);

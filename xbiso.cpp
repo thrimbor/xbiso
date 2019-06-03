@@ -124,13 +124,13 @@ int main (int argc, char* argv[])
             std::cout << "extracting " << filename << " to " << dirname << std::endl;
 
             std::ifstream isofile;
-            isofile.open(filename.c_str(), isofile.binary | isofile.in);
+            isofile.open(filename.c_str(), std::ifstream::binary | std::ifstream::in);
             if (!isofile.is_open()) {
                 std::cerr << "ERROR: Could not open file '" << filename << "'" << std::endl;
                 return 1;
             }
 
-            isofile.exceptions(isofile.failbit | isofile.badbit | isofile.eofbit);
+            isofile.exceptions(std::ifstream::failbit | std::ifstream::badbit | std::ifstream::eofbit);
 
             xdvdfs::VolumeDescriptor vd;
             vd.readFromFile(isofile);
@@ -178,7 +178,7 @@ void handleDirectoryEntry (std::ifstream& file, xdvdfs::DirectoryEntry& dirent)
         if (!dryRun)
         {
             std::ofstream efile;
-            efile.open(dirent.getFilename().c_str(), efile.out | efile.binary | efile.trunc);
+            efile.open(dirent.getFilename().c_str(), std::ofstream::out | std::ofstream::binary | std::ofstream::trunc);
 
             if (!efile.is_open()) {
                 std::cerr << "failed to open file '" << dirent.getFilename() << "'" << std::endl;
