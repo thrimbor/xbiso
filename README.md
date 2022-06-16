@@ -1,5 +1,5 @@
 # xbiso
-xbiso is an ISO extraction and creation utillity for XDVDFS images.
+xbiso is an ISO extraction and creation utility for XDVDFS images.
 
 ## Old version
 This new version of xbiso is written in C++ and is NOT directly based on the old C-code written by Tonto Rostenfaust. I'd like to thank him and the other authors for their work, though, because it was their work that got me interested in writing this program. If you want to find out more about the old xbiso-version and it's authors, you can find all information in the history of this repository.
