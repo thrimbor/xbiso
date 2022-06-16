@@ -37,6 +37,8 @@ namespace xdvdfs
         return r;
     }
 
+    bool checkFilename (const std::string& filename);
+
     class DirectoryEntry;
 
     /**

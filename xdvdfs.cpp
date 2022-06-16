@@ -4,6 +4,39 @@
 #include <cstring>
 #include <iostream>
 
+bool xdvdfs::checkFilename (const std::string& filename)
+{
+    for (const char& c : filename) {
+        if ((c >= 'A' && c <= 'Z') ||
+            (c >= 'a' && c <= 'z') ||
+            (c >= '0' && c <= '9') ||
+            (c == '.') ||
+            (c == ' ') ||
+            (c == '!') ||
+            (c == '#') ||
+            (c == '$') ||
+            (c == '%') ||
+            (c == '\'') ||
+            (c == '(') ||
+            (c == ')') ||
+            (c == '-') ||
+            (c == '@') ||
+            (c == '^') ||
+            (c == '_') ||
+            (c == '`') ||
+            (c == '{') ||
+            (c == '}') ||
+            (c == '~'))
+        {
+            continue;
+        } else {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void xdvdfs::VolumeDescriptor::readFromFile (std::ifstream& file, const std::ifstream::off_type sectorOffset)
 {
     std::vector<char> buffer(2048);
@@ -77,6 +110,9 @@ void xdvdfs::DirectoryEntry::readFromFile (std::ifstream& file, std::streampos s
 
 std::string xdvdfs::DirectoryEntry::getFilename () const
 {
+    if (!checkFilename(this->filename))
+        throw xdvdfs::Exception(std::string("Filename contains invalid characters: '") + this->filename + "'");
+
     return this->filename;
 }
 
