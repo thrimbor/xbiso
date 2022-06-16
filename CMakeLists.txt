@@ -13,7 +13,7 @@ configure_file (
 
 include_directories("${PROJECT_BINARY_DIR}")
 
-add_executable(xbiso xbiso.cpp xdvdfs.cpp)
+add_executable(xbiso xbiso.hpp xbiso.cpp xbiso_extract.cpp xdvdfs.hpp xdvdfs.cpp)
 
 install (TARGETS xbiso DESTINATION bin)
 
