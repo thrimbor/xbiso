@@ -84,41 +84,46 @@ void printUsage ()
 
 int main (int argc, char* argv[])
 {
-    argc -= (argc>0); argv += (argc>0);
+        try {
+        argc -= (argc>0); argv += (argc>0);
 
-    option::Stats stats(usage, argc, argv);
-    std::vector<option::Option> options(stats.options_max);
-    std::vector<option::Option> buffer(stats.buffer_max);
-    option::Parser parse(usage, argc, argv, &options[0], &buffer[0]);
+        option::Stats stats(usage, argc, argv);
+        std::vector<option::Option> options(stats.options_max);
+        std::vector<option::Option> buffer(stats.buffer_max);
+        option::Parser parse(usage, argc, argv, &options[0], &buffer[0]);
 
-    if (parse.error())
-        return 1;
+        if (parse.error())
+            return 1;
 
-    if (options[DIRECTORY] && parse.nonOptionsCount() > 1) {
-        std::cerr << "ERROR: Specifying an extraction directory is not allowed when passing more than one image file." << std::endl;
-        return 1;
-    }
-
-    if (options[HELP] || argc == 0) {
-        printUsage();
-        return 0;
-    }
-
-    if (options[DRYRUN])
-        dryRun = true;
-
-    if (options[EXTRACT]) {
-
-        for (int i=0; i<parse.nonOptionsCount(); ++i) {
-            std::string filename = parse.nonOption(i);
-            std::string dirname = options[DIRECTORY] ? options[DIRECTORY].arg : filename.substr(0, filename.find_last_of("."));
-
-            extractISO(filename, dirname);
+        if (options[DIRECTORY] && parse.nonOptionsCount() > 1) {
+            std::cerr << "ERROR: Specifying an extraction directory is not allowed when passing more than one image file." << std::endl;
+            return 1;
         }
-    } else {
-        printUsage();
-    }
 
-    return 0;
+        if (options[HELP] || argc == 0) {
+            printUsage();
+            return 0;
+        }
+
+        if (options[DRYRUN])
+            dryRun = true;
+
+        if (options[EXTRACT]) {
+
+            for (int i=0; i<parse.nonOptionsCount(); ++i) {
+                std::string filename = parse.nonOption(i);
+                std::string dirname = options[DIRECTORY] ? options[DIRECTORY].arg : filename.substr(0, filename.find_last_of("."));
+
+                extractISO(filename, dirname);
+            }
+        } else {
+            printUsage();
+        }
+
+        return 0;
+    } catch (std::exception &e) {
+        std::cerr << e.what() << std::endl;
+        return -1;
+    }
 }
 
