@@ -13,7 +13,7 @@ namespace xdvdfs
     class Exception : public std::exception
     {
         public:
-            explicit Exception (const char * str) : sDetails(str) {}
+            explicit Exception (const std::string &str) : sDetails(str) {}
 
             const char* what() const noexcept override
             {
