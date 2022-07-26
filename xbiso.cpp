@@ -38,12 +38,13 @@ struct Arg: public option::Arg {
     }
 };
 
-enum optionIndex {UNKNOWN, HELP, VERBOSE, EXTRACT, DRYRUN, PROGRESS, DIRECTORY};
+enum optionIndex {UNKNOWN, HELP, VERBOSE, EXTRACT, EXTRACTSINGLE, DRYRUN, PROGRESS, DIRECTORY};
 const option::Descriptor usage[] = {
     {UNKNOWN, 0, "", "", option::Arg::None, ""},
     {HELP, 0, "h", "help", option::Arg::None, ""},
     {VERBOSE, 0, "v", "verbose", option::Arg::None, ""},
     {EXTRACT, 0, "x", "extract", option::Arg::None, ""},
+    {EXTRACTSINGLE, 0, "s", "extract-single", Arg::NonEmpty, ""},
     {DRYRUN, 0, "n", "dry-run", option::Arg::None, ""},
     {PROGRESS, 0, "p", "progress", option::Arg::None, ""},
     {DIRECTORY, 0, "d", "directory", Arg::NonEmpty, ""},
@@ -75,6 +76,7 @@ void printUsage ()
               << "  -h,--help              Print this help message\n"
               << "  -v,--verbose           Be verbose\n"
               << "  -x,--extract           Extract the passed image files\n"
+              << "  -s,--extract-single    Extract single file from image\n"
               << "  -n,--dry-run           Dry-run only, don't actually modify files\n"
               << "  -p,--progress          Show progress while extracting/creating\n"
               << "  -d,--directory <dir>   Extract into directory <dir>.\n"
@@ -115,6 +117,13 @@ int main (int argc, char* argv[])
                 std::string dirname = options[DIRECTORY] ? options[DIRECTORY].arg : filename.substr(0, filename.find_last_of("."));
 
                 extractISO(filename, dirname);
+            }
+        } else if (options[EXTRACTSINGLE]) {
+            for (int i=0; i<parse.nonOptionsCount(); ++i) {
+                std::string filename = parse.nonOption(i);
+                std::string dirname = options[DIRECTORY] ? options[DIRECTORY].arg : filename.substr(0, filename.find_last_of("."));
+
+                extractFile(filename, dirname, options[EXTRACTSINGLE].arg);
             }
         } else {
             printUsage();

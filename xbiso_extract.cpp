@@ -31,6 +31,7 @@
 
 
 void handleDirectoryEntry (std::ifstream& file, xdvdfs::DirectoryEntry& dirent);
+void handleDirectoryEntrySingleFile (std::ifstream& file, xdvdfs::DirectoryEntry& dirent, const std::string &wantedfile);
 
 void extractISO (const std::string &filename, const std::string &dirname)
 {
@@ -113,5 +114,92 @@ void handleDirectoryEntry (std::ifstream& file, xdvdfs::DirectoryEntry& dirent)
     {
         xdvdfs::DirectoryEntry de = dirent.getRightChild(file);
         handleDirectoryEntry(file, de);
+    }
+}
+
+void extractFile (const std::string &filename, const std::string &dirname, const std::string &wantedfile)
+{
+    std::cout << "extracting " << filename << " to " << dirname << std::endl;
+
+    std::ifstream isofile;
+    isofile.open(filename.c_str(), std::ifstream::binary | std::ifstream::in);
+    if (!isofile.is_open()) {
+        throw std::runtime_error(std::string("ERROR: Could not open file '") + filename + "'");
+    }
+
+    isofile.exceptions(std::ifstream::failbit | std::ifstream::badbit | std::ifstream::eofbit);
+
+    xdvdfs::VolumeDescriptor vd;
+    vd.readFromFile(isofile);
+
+    try {
+        vd.validate();
+    } catch (xdvdfs::Exception &e) {
+        // Try again with the sector offset for Redump files
+        vd.readFromFile(isofile, 0x30600);
+        vd.validate();
+        std::cout << "Redump-style ISO detected" << std::endl;
+    }
+    vd.validate();
+
+    if (!dryRun) {
+        mkdir(dirname.c_str(), 0755);
+        chdir(dirname.c_str());
+    }
+
+    xdvdfs::DirectoryEntry de = vd.getRootDirEntry(isofile);
+    handleDirectoryEntrySingleFile(isofile, de, wantedfile);
+
+    if (!dryRun)
+        chdir("..");
+}
+
+void handleDirectoryEntrySingleFile (std::ifstream& file, xdvdfs::DirectoryEntry& dirent, const std::string &wantedfile)
+{
+    if (dirent.isDirectory() && false)
+    {
+        std::cout << "creating directory " << dirent.getFilename() << std::endl;
+
+        if (!dryRun) {
+            mkdir(dirent.getFilename().c_str(), 0755);
+            chdir(dirent.getFilename().c_str());
+        }
+
+        xdvdfs::DirectoryEntry de = dirent.getFirstEntry(file);
+        handleDirectoryEntrySingleFile(file, de, wantedfile);
+
+        if (!dryRun)
+            chdir("..");
+    }
+    else
+    {
+        //std::cout << "extracting " << dirent.getFilename() << std::endl;
+
+        if (!dryRun)
+        {
+            std::string efile_name = dirent.getFilename();
+            if (std::equal(efile_name.begin(), efile_name.end(), wantedfile.begin(), [](const char &c1, const char &c2){return std::tolower(c1) == std::tolower(c2);})) {
+                std::ofstream efile;
+                efile.open(wantedfile.c_str(), std::ofstream::out | std::ofstream::binary | std::ofstream::trunc);
+
+                if (!efile.is_open()) {
+                    std::cerr << "failed to open file '" << wantedfile << "'" << std::endl;
+                }
+
+                dirent.extractFile(file, efile);
+            }
+        }
+    }
+
+    if (dirent.hasLeftChild())
+    {
+        xdvdfs::DirectoryEntry de = dirent.getLeftChild(file);
+        handleDirectoryEntrySingleFile(file, de, wantedfile);
+    }
+
+    if (dirent.hasRightChild())
+    {
+        xdvdfs::DirectoryEntry de = dirent.getRightChild(file);
+        handleDirectoryEntrySingleFile(file, de, wantedfile);
     }
 }

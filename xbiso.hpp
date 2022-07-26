@@ -20,6 +20,7 @@
 #include <string>
 
 void extractISO (const std::string& filename, const std::string& dirname);
+void extractFile (const std::string &filename, const std::string &dirname, const std::string &wantedfile);
 
 extern int verbosityLevel;
 extern bool dryRun;
