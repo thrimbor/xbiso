@@ -153,6 +153,11 @@ bool xdvdfs::DirectoryEntry::isDirectory () const
     return ((this->attributes & xdvdfs::DirectoryEntry::FILE_DIRECTORY) != 0);
 }
 
+bool xdvdfs::DirectoryEntry::isEmptySector () const
+{
+    return (this->leftSubTree == 0xFFFF && this->rightSubTree == 0xFFFF);
+}
+
 bool xdvdfs::DirectoryEntry::hasLeftChild () const
 {
     return (this->leftSubTree != 0);

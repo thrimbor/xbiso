@@ -71,6 +71,7 @@ namespace xdvdfs
             std::streamsize getFileSize() const;
             void extractFile(std::ifstream& file, std::ofstream& ofile);
             bool isDirectory () const;
+            bool isEmptySector () const;
             bool hasLeftChild () const;
             bool hasRightChild () const;
             DirectoryEntry getLeftChild (std::ifstream& file);

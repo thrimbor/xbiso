@@ -71,6 +71,11 @@ void extractISO (const std::string &filename, const std::string &dirname)
 
 void handleDirectoryEntry (std::ifstream& file, xdvdfs::DirectoryEntry& dirent)
 {
+    // MS tools don't set the content offset to zero for empty directories, instead, they
+    // create a padding sector filled with 0xFF. We need to check for this, or we'll get corruption
+    if (dirent.isEmptySector())
+        return;
+
     if (dirent.isDirectory())
     {
         std::cout << "creating directory " << dirent.getFilename() << std::endl;
